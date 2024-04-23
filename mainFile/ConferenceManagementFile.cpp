@@ -191,10 +191,96 @@ void page_2(User &user)
                 createConferences(user);
                 break;
             case 3:
+            if (bool isOrganizer()==true)
+                orgportal(User& user);
+            else
+                std::cout<<"You are not registered as an organiser and consequently doesn't have access to the organiser portal";
+            
+            case 4:
                 deleteAllExit();
             default:
                 std :: cout << "\nInvalid response\n";
 
+        }
+    }
+}
+
+    
+}
+void OrgPortal(User &user)
+{
+    while (true)
+    {
+        displayConference();
+        std::cout << "\n";
+        std::cout << "\n1. Venue manipulation";
+        std::cout << "\n2. Remove Conference";
+        std::cout << "\n3. Back to main menu";
+        std::cout << "\nEnter your choice (1-3): ";
+        int choice;
+        std::cin >> choice;
+
+        switch (choice)
+        {
+        case 1:
+        {
+            // Edit Conference
+            int editChoice;
+            std::cout << "1. Add Venue\n";
+            std::cout << "2. Delete Venue\n";
+            std::cout << "3. Show Venues\n";
+            std::cout << "4. Edit Venue\n";
+            std::cout << "Enter your choice (1-4): ";
+            std::cin >> editChoice;
+
+            switch (editChoice)
+            {
+            case 1:
+            {
+                std::string newVenue;
+                std::cout << "Enter the name of the venue to add: ";
+                std::cin >> newVenue;
+                Venue::addVenue(newVenue);
+                break;
+            }
+            case 2:
+            {
+                std::string venueToDelete;
+                std::cout << "Enter the name of the venue to delete: ";
+                std::cin >> venueToDelete;
+                Venue::deleteVenue(venueToDelete);
+                break;
+            }
+            case 3:
+            {
+                Venue::showVenues();
+                break;
+            }
+            case 4:
+            {
+                std::string oldVenue, newVenueName;
+                std::cout << "Enter the name of the venue to edit: ";
+                std::cin >> oldVenue;
+                std::cout << "Enter the new name of the venue: ";
+                std::cin >> newVenueName;
+                Venue::editVenue(oldVenue, newVenueName);
+                break;
+            }
+            default:
+                std::cout << "Invalid choice\n";
+                break;
+            }
+            break;
+        }
+        case 2:
+            // Call a function to remove conference
+            break;
+        case 3:
+            page_2(user);
+            break;
+        default:
+            std::cout << "Invalid choice\n";
+            break;
         }
     }
 }

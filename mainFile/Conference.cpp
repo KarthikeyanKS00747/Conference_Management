@@ -347,6 +347,7 @@ class User
         std :: string username;
         std :: string password;
         std :: string email;
+        std :: bool organizerflag=false;
 
     protected:
         bool operator == (const User& other) const
@@ -356,7 +357,9 @@ class User
 
     public:
         static std :: map<std::string, User*> userMap;
-
+        bool isOrganizer() {
+            return organizerflag;
+        }
         // Constructor
         User
         (std :: string name, short int age, std :: string regNO, std :: string gender, 
