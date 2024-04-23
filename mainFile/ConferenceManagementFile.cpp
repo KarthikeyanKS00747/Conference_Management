@@ -63,7 +63,7 @@ void createConferences(User& user)
                 Organiser* organiser = new Organiser(user);
 
                 std :: string conference_name;
-                Conference conference(name, datetime, venue, organiser);
+                new Conference(name, datetime, venue, organiser);
                 break;
             }
             else 
@@ -132,12 +132,13 @@ std :: map <std :: string, Conference*> :: iterator getConference(int n = 10)
         {
             int num = std :: stoi(resp);
             // @ create code to check for things like if resp was less than 1 or more than 10
-            if (num < 0 || num > 10)
+            if (num < 1 || num > 10)
             {
                 std :: cout << "\nInvalid Input.\nTry Again.\n";
                 continue;
             }
-            std :: advance(it, num - 10);
+            num --;
+            std :: advance(it, num - i);
             return it;
         }
         else if (resp == "next")
@@ -175,7 +176,8 @@ void page_2(User &user)
         std :: cout << "\n\t\tMAIN MENU";
         std :: cout << "\n1. Explore Conferences"; 
         std :: cout << "\n2. Create Conference";
-        std :: cout << "\n3. Exit";
+        std :: cout << "\n3. Organiser Portal";
+        std :: cout << "\n4. Exit";
         int resp;
         std :: cout << "\n: ";
         std :: cin >> resp;
@@ -234,7 +236,7 @@ void exploreConferences(User &user)
             {
                 std :: map <std :: string, Conference*> :: iterator it = getConference();
                 std :: cout << "\nYou selected: " << it -> first;
-                organiser -> organiseConference(it -> second);
+                it -> second -> organiseConference(organiser);
                 std :: cout << "\nOrganise More? [y / any key]: ";
                 std :: cin >> resp;
                 std :: cin.ignore(std :: numeric_limits<std :: streamsize> :: max(), '\n');
