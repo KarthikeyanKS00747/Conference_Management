@@ -4,7 +4,7 @@
 #include <map>
 #include <limits>
 #include <memory>
-
+#include <regex>
 #include <sstream>
 #include <iomanip>
 #include <ctime>
@@ -39,6 +39,7 @@ class DateTime
         // {
         //     day_ = getDay();
         // }
+        // default not allowed
 
         DateTime(const DateTime& other)
         : date_(other.date_), time_(other.time_), day_(other.day_){}
@@ -70,16 +71,71 @@ class DateTime
             }
         }
 
-        std :: string displayTime()
+        std::string displayTime(const std::string& format = "HH:MM:SS")
         {
-            return "";
-            // @2 define this
+            if (format == "HH:MM:SS")
+            {
+                return time_;
+            }
+            else if (format == "HH:MM")
+            {
+                return time_.substr(0, 5);
+            }
+            else if (format == "HH")
+            {
+                return time_.substr(0, 2);
+            }
+            else
+            {
+                std::cout << "\nError: Not a valid Time Format\n";
+                return "00:00:00";
+            }
         }
 
-        static bool checkDateTime(std :: string& date_, std :: string& timeSlot_)
+        static bool checkDate(const std::string& date, const std::string& format = "DD-MM-YYYY")
         {
-            return true; 
-            // @3 define this
+            std::regex pattern;
+            if (format == "DD-MM-YYYY")
+            {
+                pattern = std::regex("^(0[1-9]|[12][0-9]|3[01])-(0[1-9]|1[012])-([12][0-9]{3})$");
+            }
+            else if (format == "DD-MM")
+            {
+                pattern = std::regex("^(0[1-9]|[12][0-9]|3[01])-(0[1-9]|1[012])$");
+            }
+            else if (format == "DD")
+            {
+                pattern = std::regex("^(0[1-9]|[12][0-9]|3[01])$");
+            }
+            else
+            {
+                std::cout << "\nError: Not a valid Date Format\n";
+                return false;
+            }
+            return std::regex_match(date, pattern);
+        }
+
+        static bool checkTime(const std::string& time, const std::string& format = "HH:MM:SS")
+        {
+            std::regex pattern;
+            if (format == "HH:MM:SS")
+            {
+                pattern = std::regex("^([01][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]$");
+            }
+            else if (format == "HH:MM")
+            {
+                pattern = std::regex("^([01][0-9]|2[0-3]):[0-5][0-9]$");
+            }
+            else if (format == "HH")
+            {
+                pattern = std::regex("^([01][0-9]|2[0-3])$");
+            }
+            else
+            {
+                std::cout << "\nError: Not a valid Time Format\n";
+                return false;
+            }
+            return std::regex_match(time, pattern);
         }
 
         bool operator == (const DateTime& other) const 
@@ -96,10 +152,9 @@ class Venue
         static int numVenues_; // Number of venues currently stored
         static const int MAX_VENUES_ = 100; // Maximum number of venues
         static std :: string placeList_[MAX_VENUES_]; // Array to store venue names
-        // @7 create venues either here or at the bottom of the code (about 15 atleast)
 
     public:
-        Venue(){};
+        Venue(){}; // not allowed and should not be not used (early implemenatation)
         Venue(const std :: string& venue_name) 
         {
             for (int i = 0; i < numVenues_; ++ i) 
@@ -107,7 +162,6 @@ class Venue
                 if (placeList_[i] == venue_name) 
                 {
                     venue_name_ = venue_name;
-                    std :: cout << "\nVenue Chosen Successfully.";
                 }
             }
         }
@@ -130,7 +184,7 @@ class Venue
             } 
             else 
             {
-                std::cerr << "Error: Venue list is full!\n";
+                std :: cout << "Error: Venue list is full!\n";
             }
         }
 
@@ -164,7 +218,7 @@ class Venue
             std :: cout << "Places in the venue list:\n";
             for (int i = 0; i < numVenues_; ++ i) 
             {
-                std::cout << "- " << placeList_[i] << '\n';
+                std :: cout << "- " << placeList_[i] << '\n';
             }
         }
 
@@ -212,10 +266,7 @@ class Venue
 class User;
 class Organiser;
 class Participant;    
-
 class Sponsor;
-
-
 
 class Conference
 {
@@ -231,24 +282,46 @@ class Conference
         static int init_id;
         static int no_of_conferences;
         static std :: map <std :: string, Conference*> conferenceMap;
+        std :: vector <Organiser*> getOrganisers()
+        {
+            return organisers_;
+        }
+        void registerOrganiser(Organiser* organiser)
+        {
+            organisers_.push_back(organiser);
+        }
+        void registerSponser(Sponsor* sponsor)
+        {
+            sponsors_.push_back(sponsor);
+        }
+        
 
     public:
-        // void registerParticipant(Conference* conference, Participant* participant)
-        // {
-        //     conference -> participants_.push_back(participant);
-        // }
-
+        static std::pair<Organiser*, Conference*> getOrganiserAndConference(User& user);
+        void registerParticipant(Participant* participant)
+        {
+            participants_.push_back(participant);
+        }
         // Constructor
         Conference(std :: string name, DateTime datetime, Venue venue, Organiser* organiser) : name_(name), datetime_(datetime), venue_(venue), generated_amt_(0.0), conference_id_(init_id), organisers_({organiser})
         {
             // Add this Conference instance to the map
             conferenceMap[name_] = this;
             init_id ++;
-
+            no_of_conferences ++;
         }
         ~Conference();     
 
+        int getConferenceID()
+        {
+            return conference_id_;
+        }
         // Method to get Conference instance by name
+
+        static std :: map <std :: string, Conference*> getConferenceMap()
+        {
+            return conferenceMap;
+        }
         static Conference* getConferenceByName(const std :: string& name) 
         {
             if (conferenceMap.find(name) != conferenceMap.end()) 
@@ -271,10 +344,6 @@ class Conference
             return datetime_;
         }
 
-        static std :: map <std :: string, Conference*> getConferenceMap()
-        {
-            return conferenceMap;
-        }
         static void showAvailableTimeSlots(Venue& venue) // @ Change this so that it accesses the slot from conference and shows the rest only 
         {
             std :: cout << "\nAvailable Time Slots:" << std :: endl;
@@ -291,12 +360,13 @@ class Conference
             for (std :: map <std :: string, Conference*> :: iterator end = conferenceMap.end(); it != end; ++ it)
             {
                 Conference* conference_ = it -> second;
-                // if (conference_ -> datetime_ == datetime && conference_ -> venue_ == venue)
-                // {
-                //     return false;
-                // }
+                if (conference_ -> datetime_ == datetime && conference_ -> venue_ == venue)
+                {
+                    return false;
+                }
             }
             return true;
+
         }
         void updateSponsoredAmount(double new_sponsored_amount, double old_sponsored_amount = 0)
         {
@@ -317,6 +387,9 @@ class Conference
             }
             conferenceMap.clear();
         }
+        
+        void organiseConference(Organiser* organiser_);
+        void sponsorConference(Sponsor* sponsor_);
 
 };
 
@@ -331,10 +404,20 @@ class User
         std :: string username;
         std :: string password;
         std :: string email;
-
-    public:
         static std :: map<std::string, User*> userMap;
 
+    protected:
+        bool organiserflag = false;
+
+    public:
+        bool operator == (const User& other) const
+        {
+            return this -> regNO == other.regNO;
+        }
+        bool isOrganizer() 
+        {
+            return organiserflag;
+        }
         // Constructor
         User
         (std :: string name, short int age, std :: string regNO, std :: string gender, 
@@ -355,7 +438,7 @@ class User
         // User() {}; 
         // This implementation must be removed
         // default cons
-
+        ~User(){}
         static User* getUserByUsername(const std::string& username) 
         {
             if (userMap.find(username) != userMap.end()) 
@@ -424,18 +507,22 @@ class User
             userMap.clear();
         }
         // More functions like updateName, updateAge, etc. can be added similarly
+
 };
 
-class Organiser : public User 
+class Organiser : public virtual User 
 {
     private:
-        std::string organisationName;
-        std::string organiserTitle;
+        std::string organisationName_;
+        std::string organiserTitle_;
 
     public:
         // Constructor
         // Organiser(){};
-        Organiser(const User& user) : User(user){};
+        Organiser(const User& user, std::string organisationName_, std::string organiserTitle_) : User(user)
+        {
+            User :: organiserflag = true;
+        };
         // Organiser(std::string name, short int age, std::string regNO, std::string gender,
         //         std::string username, std::string password, std::string email,
         //         std::string orgName, std::string title)
@@ -443,59 +530,90 @@ class Organiser : public User
         //         organisationName(orgName), organiserTitle(title) {}
 
         // Getters and Setters
-        void setOrganisationName(std::string orgName) { organisationName = orgName; }
-        std::string getOrganisationName() const { return organisationName; }
+        void setOrganisationName(std::string orgName) { organisationName_ = orgName; }
+        std::string getOrganisationName() const { return organisationName_; }
 
-        void setOrganiserTitle(std::string title) { organiserTitle = title; }
-        std::string getOrganiserTitle() const { return organiserTitle; }
+        void setOrganiserTitle(std::string title) { organiserTitle_ = title; }
+        std::string getOrganiserTitle() const { return organiserTitle_; }
 
         // Display organiser information
-
-        void displayOrganiserInfo() const
+        void display() const override
         {
-            display(); // Display user information from the base class
-            std::cout << "Organisation Name: " << organisationName << "\nOrganiser Title: " << organiserTitle << std::endl;
+            User :: display(); // Display user information from the base class
+            std::cout << "Organisation Name: " << organisationName_ << "\nOrganiser Title: " << organiserTitle_ << std::endl;
         }
-        void organiseConference(Conference *conference){;}
-        // @ needs to be defined
-        // needs to add the pointer to this instance to the sponsors in Conefrence class
+        friend void Conference :: organiseConference(Organiser* organiser_);
+
+        bool operator == (Organiser* other)
+        {
+            return User :: operator == (*static_cast<User*>(other));
+        }
 };
 
-class Participant: public User
+std::pair<Organiser*, Conference*> Conference :: getOrganiserAndConference(User& user) 
+{
+    for (auto& pair : Conference::getConferenceMap()) {
+        Conference* conference = pair.second;
+        for (Organiser* organiser : conference -> getOrganisers()) 
+        {
+            if (*static_cast<User*>(organiser) == user) {
+                return {organiser, conference};
+            }
+        }
+    }
+    return {nullptr, nullptr};
+}
+void Conference :: organiseConference(Organiser* organiser_)
+{
+    for (Organiser* organiser : getOrganisers())
+    {
+        if (organiser_ == organiser) 
+        {
+            std :: cout << "\nThe conference " << this -> getName() << " is already organised by " << organiser_ -> getName() << ".\n";
+            return;
+        }
+    }
+    this -> registerOrganiser(organiser_);
+    std :: cout << "\nChanges have been made successfully.\n";
+}
+class Participant: public virtual User
 {
     private:
         std :: vector <Conference*> scheduledConferences_ = {};
         std :: vector <DateTime*> scheduledDateTimes_ = {};
-    
+        
         // bool conferenceScheduled;
 
     public:
         // Constructor
         // copy constructor should be the only way to init
-        Participant(const User& user) : User(user){};
+        Participant(const User& user) : User(user){}
 
         ~Participant()
         {
             for (Conference* conference_ : scheduledConferences_)
             {
-                delete conference_;
+                if (conference_ != nullptr)
+                {
+                    delete conference_;
+                    conference_ = nullptr;
+                }
             }
+            scheduledConferences_.clear();
             for (DateTime* datetime_ : scheduledDateTimes_)
             {
                 delete datetime_;
+                datetime_ = nullptr;
             }
-            scheduledConferences_.clear();
             scheduledDateTimes_.clear();
         };
-
         // friend void registerParticipant(Conference* conference, Participant* participant);
         void scheduleConference(Conference *conference)
         {
             // Check if participant already registered for the conference
             for (Conference* conference_ : scheduledConferences_)
             {
-                // should be changed to getID()
-                if (conference_ -> getName() == conference -> getName())
+                if (conference_ -> getConferenceID() == conference -> getConferenceID())
                 {
                     std :: cout << "\nConference already registered.";
                     return;
@@ -504,10 +622,8 @@ class Participant: public User
             DateTime* newDateTime = new DateTime(conference -> getDateTime());
             scheduledConferences_.push_back(conference);
             scheduledDateTimes_.push_back(newDateTime);
-            
-            // needs to code for the conference to register a participant
-
-            //registerParticipant(conference, this);
+            conference -> registerParticipant(this);
+        
             std :: cout << "\nConference registered successfully.";
         }
 
@@ -535,18 +651,19 @@ class Participant: public User
                 std :: cout << "\n" << datetime_ -> displayDate("DD-MM-YYYY"/*format1*/) << datetime_ -> displayTime(/*format2*/);
             }
         }
+
 };
 
-class Sponsor : public User {
+class Sponsor : public virtual User {
     private:
         std :: string sponsored_event_;
         double amount_;
     
     public:
-        Sponsor(std::string name, short int age, std::string regNO, std::string gender, 
-        std::string username, std::string password, std::string email, std :: string event, double amt) 
-        : User(name, age, regNO, gender, username, password, email),
-        sponsored_event_(event), amount_(amt) {};
+        // Sponsor(std::string name, short int age, std::string regNO, std::string gender, 
+        // std::string username, std::string password, std::string email, std :: string event, double amt) 
+        // : User(name, age, regNO, gender, username, password, email),
+        // sponsored_event_(event), amount_(amt) {};
         Sponsor(std :: string sponsored_event, User &user) : sponsored_event_(sponsored_event), User(user), amount_(0.0){};
 
         std :: string getEventName(){return sponsored_event_;}
@@ -557,59 +674,71 @@ class Sponsor : public User {
             User :: display();
             std :: cout << ", Event: " << sponsored_event_ << ", Amount: ₹" << amount_;
         }
-        void sponsorConference() 
+        bool operator == (Sponsor* other)
         {
-            double sponsored_amount;
-            std :: cout << "\nEnter the amount to sponsor: ";
-            std :: cin >> sponsored_amount;
-            std :: cin.ignore(std :: numeric_limits<std :: streamsize> :: max(), '\n');
-            Conference* conference = Conference :: getConferenceByName(sponsored_event_);
-            
-            for (Sponsor* sponsor : conference -> getSponsors()) 
-            {
-                if (sponsor == this) 
-                {
-                    // Conference already sponsored, update sponsorship amount
-
-                    conference -> updateSponsoredAmount(sponsored_amount, amount_);
-                    std::cout << "\nSponsorship amount for the conference updated successfully.";
-                    return;
-                }
-            }
-            // Conference not sponsored yet, sponsor it
-            conference -> updateSponsoredAmount(sponsored_amount);
-            std::cout << "\nConference sponsored successfully.";
+            return User :: operator == (*static_cast<User*>(other));
         }
+        friend void Conference :: sponsorConference(Sponsor* sponsor);
 
         double getSponsoredAmount() const 
         {
             return amount_;
         } 
 };
+
+void Conference :: sponsorConference(Sponsor* sponsor)
+{
+    double sponsored_amount;
+    std :: cout << "\nEnter the amount to sponsor: ";
+    std :: cin >> sponsored_amount;
+    std :: cin.ignore(std :: numeric_limits<std :: streamsize> :: max(), '\n');
+    
+    for (Sponsor* sponsor_ : this -> getSponsors()) 
+    {
+        if (sponsor_ == sponsor) 
+        {
+            // Conference already sponsored, update sponsorship amount
+            this -> updateSponsoredAmount(sponsor_ -> amount_, sponsored_amount);
+            std::cout << "\nSponsorship amount for the conference updated successfully.";
+            return;
+        }
+    }
+    // Conference not sponsored yet, sponsor it
+    this -> updateSponsoredAmount(sponsored_amount);
+    this -> registerSponser(sponsor);
+    std::cout << "\nConference sponsored successfully.";
+}
+
 Conference :: ~Conference()
 {
     for (Organiser* organiser : organisers_) 
     {
         delete organiser;
+        organiser = nullptr;
     }
     organisers_.clear();
 
     for (Participant* participant : participants_)
     {
         delete participant;
+        participant = nullptr;
     }
     participants_.clear();
 
     for (Sponsor* sponsor : sponsors_) 
     {
         delete sponsor;
+        sponsor = nullptr;
     }
     sponsors_.clear();
+    no_of_conferences --;
+    init_id --;
 }   
+
 // @ add more venues since we havent implemented flle handling for now
 std :: string Venue :: placeList_[Venue :: MAX_VENUES_];
 int Venue :: numVenues_ = 0;
-std :: map<std::string, User*> User::userMap;
+std :: map <std :: string, User*> User :: userMap;
 std :: map <std :: string, Conference*> Conference :: conferenceMap;
 int Conference :: init_id = 1000;
 int Conference :: no_of_conferences = 0;
