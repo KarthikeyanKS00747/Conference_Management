@@ -27,3 +27,31 @@ To install, build, and execute the `Conference.cpp` and `ConferenceManagementMai
 - **User Interaction Functions**: Functions like `orgPortal()` to provide a portal for organizers, `exploreConferences()` to allow users to explore conferences and take actions like joining or organizing them, and `page_1()` which serves as the main menu for signing in, signing up, or exiting the program.
 - **User Authentication**: `sign_in()` and `sign_up()` functions handle user authentication and registration respectively.
 - **Main Function**: The `main()` function initializes data, presents the main menu, and handles program exit.
+
+# Team Members and Contributions
+
+## Karthikeyan KS (Team Leader)
+Contribution: Managed the team, served as the team leader, wrote the main method, integrated different code modules, and addressed bugs throughout the development process.
+
+## S Sarvesh
+Contribution: Contributed to the development of the Date and Time class, ensuring accurate and efficient handling of date and time-related functionalities.
+
+## Gautham Praveen
+Contribution: Developed the User class, including its functionalities and behaviors. Additionally, provided essential scripts and inputs for the creation of the animated video.
+
+## Parth Bhavsar
+Contribution: Worked on the Organizer class, implementing features and functionalities required for managing organizers within the system. Also, played a significant role in editing and refining the video content.
+
+## Shivani Srivastava
+Contribution: Contributed to the development of the Participant class, ensuring smooth functionality and accurate representation of participant-related data. Additionally, conducted extensive product testing to ensure quality and reliability.
+
+## C Harshita
+Contribution: Worked on the Sponsor class, implementing features necessary for sponsor management within the system. Also, actively participated in product testing to identify and address any issues or bugs.
+
+## Alen Varghese Soji
+Contribution: Developed the Conference class, which encapsulates the functionality related to managing conferences within the system. Ensured that the conference-related features were implemented effectively and efficiently.
+
+## Uditanshu Mittal
+Contribution: Contributed to the development of the Venue class, which handles the management of venues for conferences and events. Implemented functionalities required for venue management and coordination.
+
+Each team member played a crucial role in different aspects of the project, contributing their expertise and efforts to achieve the project's goals effectively.
