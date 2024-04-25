@@ -3,9 +3,9 @@
 
 
 void page_1();
-void page_2(User& user);
-void exploreConferences(User& user);
-void createConferences(User& user);
+void page_2(std :: shared_ptr<User> user);
+void exploreConferences(std :: shared_ptr<User> user);
+void createConferences(std :: shared_ptr<User> user);
 
 void deleteAllExit()
 {
@@ -13,7 +13,7 @@ void deleteAllExit()
     User :: deleteAllUsers();
     exit(0);
 }
-void createConferences(User& user)
+void createConferences(std :: shared_ptr<User> user)
 {
     std :: string name;
     std :: string date, timeSlot;
@@ -36,10 +36,21 @@ void createConferences(User& user)
         if (Venue :: checkVenue(venue_name))
         {
             std :: cout << "\nVenue exists.\n";
+            std :: cout << "\nVenue Chosen Successfully.\n";
             Conference :: showAvailableTimeSlots(venue);
-            std :: cout << "\nEnter date in DD-MM-YYYY format.\n";
-            // @ checkDate() here in a while loop
-            getline(std :: cin, date);
+            while (true)
+            {
+                std :: cout << "\nEnter date in DD-MM-YYYY format.\n";
+                getline(std :: cin, date);
+                if (DateTime :: checkDate(date))
+                {
+                    break;
+                }
+                else
+                {
+                    std :: cout << "\nInvalid date format. Please enter date in DD-MM-YYYY format.\n";
+                }
+            }
 
             std :: cout << "\nChoose the time slot by number (1-4): ";
             std :: cin >> choice;
@@ -60,10 +71,20 @@ void createConferences(User& user)
             if (Conference :: isTimeSlotAvailable(datetime, venue))
             {
                 std :: cout << "\nSlot Available.\nSlot booked successfully.\n";
-                Organiser* organiser = new Organiser(user);
-
+                std::string organisationName;
+                do {
+                    std::cout << "Enter your organisation name: ";
+                    std::getline(std::cin, organisationName);
+                } while (organisationName.empty());
+                std::string organiserTitle;
+                do {
+                    std::cout << "Enter your organisation title: ";
+                    std::getline(std::cin, organiserTitle);
+                } while (organiserTitle.empty());
+                std :: cout << "\nDetails have been successfully saved.\n";
+                std :: shared_ptr<Organiser> organiser = std :: make_shared<Organiser>(user, organisationName, organiserTitle);
                 std :: string conference_name;
-                new Conference(name, datetime, venue, organiser);
+                std :: make_shared<Conference> (name, datetime, venue, organiser);
                 break;
             }
             else 
@@ -73,7 +94,7 @@ void createConferences(User& user)
         }
         else
         {
-            std :: cout << "\nVenue doesn't exist.\nAdd to Venues?[y / any key]";
+            std :: cout << "\nVenue doesn't exist.\nAdd to Venues? [y / any key]: ";
             std :: string resp;
             std :: cin >> resp;
             std :: cin.ignore(std :: numeric_limits<std :: streamsize> :: max(), '\n');
@@ -99,9 +120,9 @@ bool isDigits(const std :: string &str)
     return true;
 }
 
-std :: map <std :: string, Conference*> :: iterator getConference(int n = 10)
+std :: map <std :: string, std :: shared_ptr<Conference>> :: iterator getConference(int n = 10)
 {
-    std :: map <std :: string, Conference*> conferenceMap = Conference :: getConferenceMap();
+    std :: map <std :: string, std :: shared_ptr<Conference>> conferenceMap = Conference :: getConferenceMap();
     auto it = conferenceMap.begin();
     size_t size = conferenceMap.size();
     // if (size == 0)
@@ -168,53 +189,13 @@ std :: map <std :: string, Conference*> :: iterator getConference(int n = 10)
         }
     }
 }
-
-void page_2(User &user)
+void orgPortal(std :: shared_ptr<User> user)
 {
     while (true)
     {
-        std :: cout << "\n\t\tMAIN MENU";
-        std :: cout << "\n1. Explore Conferences"; 
-        std :: cout << "\n2. Create Conference";
-        std :: cout << "\n3. Organiser Portal";
-        std :: cout << "\n4. Exit";
-        int resp;
-        std :: cout << "\n: ";
-        std :: cin >> resp;
-        std :: cin.ignore(std :: numeric_limits<std :: streamsize> :: max(), '\n');
-        switch(resp)
-        {
-            case 1:
-                exploreConferences(user);
-                break;
-            case 2:
-                createConferences(user);
-                break;
-            case 3:
-            if (bool isOrganizer()==true)
-                orgportal(User& user);
-            else
-                std::cout<<"You are not registered as an organiser and consequently doesn't have access to the organiser portal";
-            
-            case 4:
-                deleteAllExit();
-            default:
-                std :: cout << "\nInvalid response\n";
-
-        }
-    }
-}
-
-    
-}
-void OrgPortal(User &user)
-{
-    while (true)
-    {
-        displayConference();
         std::cout << "\n";
         std::cout << "\n1. Venue manipulation";
-        std::cout << "\n2. Remove Conference";
+        std::cout << "\n2. Show Conference";
         std::cout << "\n3. Back to main menu";
         std::cout << "\nEnter your choice (1-3): ";
         int choice;
@@ -241,6 +222,7 @@ void OrgPortal(User &user)
                 std::cout << "Enter the name of the venue to add: ";
                 std::cin >> newVenue;
                 Venue::addVenue(newVenue);
+                std::cout << "The venue has been successfully added\n";
                 break;
             }
             case 2:
@@ -249,10 +231,12 @@ void OrgPortal(User &user)
                 std::cout << "Enter the name of the venue to delete: ";
                 std::cin >> venueToDelete;
                 Venue::deleteVenue(venueToDelete);
+                std::cout << "The venue has been successfully deleted\n";
                 break;
             }
             case 3:
             {
+                std::cout << "The venue available for a conference booking are:\n";
                 Venue::showVenues();
                 break;
             }
@@ -264,6 +248,7 @@ void OrgPortal(User &user)
                 std::cout << "Enter the new name of the venue: ";
                 std::cin >> newVenueName;
                 Venue::editVenue(oldVenue, newVenueName);
+                std::cout << "The venue has been successfully updated\n";
                 break;
             }
             default:
@@ -273,8 +258,18 @@ void OrgPortal(User &user)
             break;
         }
         case 2:
-            // Call a function to remove conference
+        {
+            std::pair<std :: shared_ptr<Organiser>, std :: shared_ptr<Conference>> organiserAndConference = Conference :: getOrganiserAndConference(user);
+            std :: shared_ptr<Organiser> organiser = organiserAndConference.first;
+            std :: shared_ptr<Conference> conference = organiserAndConference.second;
+        
+            if (organiser && conference) {
+                std::cout << "Organiser: " << organiser->getName() << " is organising Conference: " << conference->getName() << "\n";
+            } else {
+                std::cout << "No conference found for the organiser.\n";
+            }
             break;
+        }
         case 3:
             page_2(user);
             break;
@@ -285,7 +280,47 @@ void OrgPortal(User &user)
     }
 }
 
-void exploreConferences(User &user)
+
+void page_2(std :: shared_ptr<User> user)
+{
+    while (true)
+    {
+        std :: cout << "\n\t\tMAIN MENU";
+        std :: cout << "\n1. Explore Conferences"; 
+        std :: cout << "\n2. Create Conference";
+        std :: cout << "\n3. Organiser Portal";
+        std :: cout << "\n4. Exit";
+        int resp;
+        std :: cout << "\n: ";
+        std :: cin >> resp;
+        std :: cin.ignore(std :: numeric_limits<std :: streamsize> :: max(), '\n');
+        switch(resp)
+        {
+            case 1:
+                exploreConferences(user);
+                break;
+            case 2:
+                createConferences(user);
+                break;
+            case 3:
+                if (user -> isOrganizer()) orgPortal(user);
+                else 
+                {
+                    std::cout<<"You are not registered as an organiser.\n";
+                    break;
+                }
+            case 4:
+                deleteAllExit();
+            default:
+                std :: cout << "\nInvalid response\n";
+
+        }
+    }
+}
+
+
+
+void exploreConferences(std :: shared_ptr<User> user)
 {
     std :: cout << "\n\t\tExplore Conferences\n";
     std :: cout << "\n1. Join";
@@ -293,18 +328,17 @@ void exploreConferences(User &user)
     std :: cout << "\n3. Sponsor";
     std :: cout << "\n4. Back to main menu";
     std :: cout << "\nEnter your choice: ";
-    int choice;
+    int choice = getIntegerInput();
     char resp = 'y';
-    std :: cin >> choice;
 
     switch(choice)
     {
         case 1:
         {
-            Participant* participant = new Participant(user);
+            std :: shared_ptr<Participant> participant = std :: make_shared<Participant>(user);
             do
             {
-                std :: map <std :: string, Conference*> :: iterator it = getConference();
+                std :: map <std :: string, std :: shared_ptr<Conference>> :: iterator it = getConference();
                 std :: cout << "\nYou selected: " << it -> first;
                 participant -> scheduleConference(it -> second);
                 std :: cout << "\nSchedule More? [y / any key]: ";
@@ -317,10 +351,22 @@ void exploreConferences(User &user)
         case 2:
         {
             // Code to organise the conference
-            Organiser* organiser = new Organiser(user);
+            std::string organisationName;
+            std::cout << "Enter your organisation name: ";
+            do 
+            {
+                std::getline(std::cin, organisationName);
+            } while (organisationName.empty());
+            std::string organiserTitle;
+            do {
+                std::cout << "Enter your organisation title: ";
+                std::getline(std::cin, organiserTitle);
+            } while (organiserTitle.empty());
+
+            std :: shared_ptr<Organiser> organiser = std :: make_shared<Organiser>(user, organisationName, organiserTitle);
             do
             {
-                std :: map <std :: string, Conference*> :: iterator it = getConference();
+                std :: map <std :: string, std :: shared_ptr<Conference>> :: iterator it = getConference();
                 std :: cout << "\nYou selected: " << it -> first;
                 it -> second -> organiseConference(organiser);
                 std :: cout << "\nOrganise More? [y / any key]: ";
@@ -335,10 +381,10 @@ void exploreConferences(User &user)
             // Code to sponsor the conference
             do
             {
-                std :: map <std :: string, Conference*> :: iterator it = getConference();
-                Sponsor* sponsor = new Sponsor(it -> first, user);
+                std :: map <std :: string, std :: shared_ptr<Conference>> :: iterator it = getConference();
+                std :: shared_ptr<Sponsor> sponsor = std :: make_shared<Sponsor>(it -> first, user);
                 std :: cout << "\nYou selected: " << it -> first;
-                sponsor -> sponsorConference();
+                it -> second -> sponsorConference(sponsor);
                 std :: cout << "\nSponsor More? [y / any key]: ";
                 std :: cin >> resp;
                 std :: cin.ignore(std :: numeric_limits<std :: streamsize> :: max(), '\n');
@@ -358,42 +404,103 @@ void exploreConferences(User &user)
     }
 }
 
-void sign_up()
-{
+void sign_up() {
     std::string name;
-    short int age;
+    std::string ageStr;
     std::string regNO;
     std::string gender;
     std::string username;
     std::string password;
     std::string email;
 
-    // @ <lengthy medium task> the getters defined in the user class must be overloaded 
-    // with static functions having the similar signature
-    // to check whether the followign attributes are correct or just name it somn
-    // like std :: string get<Attribute>Input() and make it use cin within the function
-    // like input in python. please make this static so everyother class can do this.
-    // the whole point of this is to check for abnormalities. use regex for email, name, username, reg no
-    // and finally use it here in place of the cin statements
-    std::cout << "\nEnter your details:\n";
-    std::cout << "\nName: ";
-    std::cin >> name;
-    std::cout << "\nAge: ";
-    std::cin >> age;
-    std::cout << "\nRegistration Number: ";
-    std::cin >> regNO;
-    std::cout << "\nGender: ";
-    std::cin >> gender;
-    std::cout << "\nUsername: ";
-    std::cin >> username;
-    std::cout << "\nPassword: ";
-    // have to create a function for setting good password
-    std::cin >> password;
-    std::cout << "\nEmail: ";
-    std::cin >> email;
+    auto isValidName = [](const std::string& name) {
+        return std::regex_match(name, std::regex("^[a-zA-Z ]+$"));
+    };
 
-    // Create a new User and add it to the userMap
-    User(name, age, regNO, gender, username, password, email); 
+    auto isValidAge = [](const std::string& age) {
+        return std::regex_match(age, std::regex("^[1-9][0-9]*$"));
+    };
+
+    auto isValidRegNo = [](const std::string& regNo) {
+        return std::regex_match(regNo, std::regex("^[a-zA-Z0-9]+$"));
+    };
+
+    auto isValidGender = [](const std::string& gender) {
+        return (gender == "male" || gender == "female");
+    };
+
+    auto isValidUsername = [](const std::string& username) {
+        return std::regex_match(username, std::regex("^[a-zA-Z0-9]+$"));
+    };
+
+    auto isValidPassword = [](const std::string& password) {
+        return (password.length() >= 6);
+    };
+
+    auto isValidEmail = [](const std::string& email) {
+        return std::regex_match(email, std::regex("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$"));
+    };
+
+    std::cout << "\nEnter your details:\n\n";
+
+    do {
+        std::cout << "Name: ";
+        std::getline(std::cin, name);
+        if (!isValidName(name)) {
+            std::cout << "Please enter a valid name.\n\n";
+        }
+    } while (!isValidName(name));
+
+    do {
+        std::cout << "\nAge: ";
+        std::getline(std::cin, ageStr);
+        if (!isValidAge(ageStr)) {
+            std::cout << "Please enter a valid age.\n\n";
+        }
+    } while (!isValidAge(ageStr));
+    int age = std::stoi(ageStr);
+
+    do {
+        std::cout << "\nRegistration Number: ";
+        std::getline(std::cin, regNO);
+        if (!isValidRegNo(regNO)) {
+            std::cout << "Please enter a valid registration number.\n\n";
+        }
+    } while (!isValidRegNo(regNO));
+
+    do {
+        std::cout << "\nGender(male/female): ";
+        std::getline(std::cin, gender);
+        if (!isValidGender(gender)) {
+            std::cout << "Please enter a valid gender.\n\n";
+        }
+    } while (!isValidGender(gender));
+
+    do {
+        std::cout << "\nUsername: ";
+        std::getline(std::cin, username);
+        if (!isValidUsername(username)) {
+            std::cout << "Please enter a valid username.\n\n";
+        }
+    } while (!isValidUsername(username));
+
+    do {
+        std::cout << "\nPassword: ";
+        std::getline(std::cin, password);
+        if (!isValidPassword(password)) {
+            std::cout << "Please enter a valid password (at least 6 characters).\n\n";
+        }
+    } while (!isValidPassword(password));
+
+    do {
+        std::cout << "\nEmail: ";
+        std::getline(std::cin, email);
+        if (!isValidEmail(email)) {
+            std::cout << "Please enter a valid email address.\n\n";
+        }
+    } while (!isValidEmail(email));
+
+    std :: make_shared<User>(name, age, regNO, gender, username, password, email); 
     std :: cout << "\nSigned up successfully.\n\n";
     page_1();
 }
@@ -409,21 +516,36 @@ void sign_in()
         std :: cin >> username;
         std :: cout << "\nPassword : ";
         std :: cin >> password;
-        User *user = User :: getUserByUsername(username);
+        std :: shared_ptr<User> user = User :: getUserByUsername(username);
+
+
         if (user != nullptr && user -> getPassword() == password)
         {
             std :: cout << "\nPassword is correct.";
             std :: cout << "\nSigned in successfully.\n";
-            page_2(*user);
+            page_2(user);
         }
         else
         {
-            std::cout << "\nInvalid username or password.";
+            std::cout << "\nInvalid username or password.\n";
         }
         
     }
 }
 
+int getIntegerInput()
+{
+    while(1)
+    {
+        std::string temp;
+        getline(std::cin,temp);
+        if(isDigits(temp))
+        {
+             return(std::stoi(temp));
+        }
+        std::cout<<"\nInvalid Input\nEnter an Integer.\n";
+    }
+}
 
 
 void page_1()
@@ -434,10 +556,9 @@ void page_1()
         std :: cout << "\n1. Sign-In\n";
         std :: cout << "\n2. Sign-Up\n";
         std :: cout << "\n3. Exit\n";
-        int resp;
         std :: cout << "\n: ";
-        std :: cin >> resp;
-        std :: cin.ignore(std  :: numeric_limits<std :: streamsize> :: max(), '\n');
+        int resp = getIntegerInput();
+        // std :: cin.ignore(std  :: numeric_limits<std :: streamsize> :: max(), '\n');
         switch(resp)
         {
             case 1:
@@ -458,10 +579,23 @@ void page_1()
 // should make the control flow go back to page 1, since we wont be using goto or async
 // the function should figure out where to go back to (probably by the use of parameters)
 // 
+
+void initialiseData()
+{
+    // to be changed to support file handling
+    Venue :: addVenue("Anna Auditorium");
+    Venue :: addVenue("Ambedkar Auditorium");
+    Venue :: addVenue("SMV Front");
+    std :: shared_ptr<User> user = std :: make_shared<User>("User Name", 21, "Reg123", "Male", "username", "password", "user@email.com");
+    std :: shared_ptr<Organiser> organiser1 = std :: make_shared<Organiser>(user, "NPTEL", "Host");
+    std :: make_shared<Conference>("Sample Conference 1", DateTime ("12-04-2024", "08:00:00"), Venue("Anna Auditorium"), organiser1);
+    std :: shared_ptr<Organiser> organiser2 = std :: make_shared<Organiser>(user, "NPTEL", "Co-host");
+    std :: make_shared<Conference>("Sample Conference 2", DateTime ("12-04-2024", "08:00:00"), Venue("Ambedkar Auditorium"), organiser2);
+
+}
 int main(void)
 {
-    Venue :: addVenue("Anna Auditorium");
-    Venue :: addVenue("1");
+    // initialiseData();
     page_1();
     deleteAllExit();
 
